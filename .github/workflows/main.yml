@@ -255,7 +255,8 @@ jobs:
               "$pages_link"
           fi
 
-          mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
+          # GitHub Releases rejects zero-byte assets with HTTP 400 Bad Content-Length.
+          mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -size +0c -print0 | sort -z)
 
           gh release create "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" \
@@ -269,7 +270,7 @@ jobs:
               --repo "$GITHUB_REPOSITORY"
           done
 
-          find release-assets -maxdepth 1 -type f -printf '%f\n' | sort > /tmp/local-assets.txt
+          find release-assets -maxdepth 1 -type f -size +0c -printf '%f\n' | sort > /tmp/local-assets.txt
           gh release view "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --json assets \
